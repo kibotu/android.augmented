@@ -1,6 +1,7 @@
 package net.kibotu.android.albert;
 
 import com.badlogic.gdx.ApplicationListener;
+import net.kibotu.LoggingAdapter.Logger;
 
 /**
  * Created with IntelliJ IDEA.
@@ -12,31 +13,31 @@ import com.badlogic.gdx.ApplicationListener;
 public class ViWiTraMain implements ApplicationListener {
     @Override
     public void create() {
-        //To change body of implemented methods use File | Settings | File Templates.
+        Logger.v(this, "on create");
     }
 
     @Override
     public void resize(int width, int height) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        Logger.v(this, "on resize");
     }
 
     @Override
     public void render() {
-        //To change body of implemented methods use File | Settings | File Templates.
+        Logger.v(this, "on render");
     }
 
     @Override
     public void pause() {
-        //To change body of implemented methods use File | Settings | File Templates.
+        Logger.v(this, "on pause");
     }
 
     @Override
     public void resume() {
-        //To change body of implemented methods use File | Settings | File Templates.
+        Logger.v(this, "on resume");
     }
 
     @Override
     public void dispose() {
-        //To change body of implemented methods use File | Settings | File Templates.
+        Logger.v(this, "on dispose");
     }
 }
