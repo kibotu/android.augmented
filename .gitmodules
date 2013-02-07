@@ -1,3 +1,0 @@
-[submodule "logger-adapter"]
-	path = logger-adapter
-	url = ../logger-adapter.git
