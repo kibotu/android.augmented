@@ -9,5 +9,25 @@
             android:layout_height="wrap_content"
             android:text="Hello World, MainActivity"
             />
+    <SlidingDrawer
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:content="@+id/content"
+            android:handle="@+id/handle" android:id="@+id/slidingDrawer" android:layout_gravity="center">
+        <LinearLayout
+                android:id="@+id/content"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent">
+            <ListView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/listView" android:layout_gravity="center_horizontal|bottom"/>
+        </LinearLayout>
+        <Button
+                android:id="@+id/handle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Handle"/>
+    </SlidingDrawer>
 </LinearLayout>
 

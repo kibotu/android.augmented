@@ -1,13 +1,19 @@
 package net.kibotu.android.albert;
 
-import android.app.Activity;
 import android.os.Bundle;
+import com.badlogic.gdx.backends.android.AndroidApplication;
+import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 
-public class MainActivity extends Activity {
+public class MainActivity extends AndroidApplication {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
+        AndroidApplicationConfiguration cfg = new AndroidApplicationConfiguration();
+        cfg.useAccelerometer = false;
+        cfg.useCompass = false;
+        cfg.useWakelock = true;
+        cfg.useGL20 = true;
+        initialize(new ViWiTraMain(), cfg);
     }
 }
