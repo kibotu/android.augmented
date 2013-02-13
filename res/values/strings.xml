@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Augmented</string>
+    <string name="app_name">Augmented Products</string>
+    <string name="ChooseFolderString">Bitte wähle einen Ordner mit STL-Datein aus.</string>
+    <string name="productl_list_dialog_text">product list</string>
 </resources>
