@@ -28,11 +28,11 @@ import java.util.List;
 public class ViWiTraMainView implements ApplicationListener, View.OnTouchListener, View.OnKeyListener {
 
     public static final String TAG = ViWiTraMainView.class.getSimpleName();
+    Mesh[] meshes;
     private ShaderProgram shader;
     private Perspective3DCamera perspective3DCamera;
     private Light light;
     private List<STLMaterial> materials;
-    Mesh[] meshes;
     private Mesh mesh1;
     private Context context;
 
@@ -164,7 +164,7 @@ public class ViWiTraMainView implements ApplicationListener, View.OnTouchListene
         materials.add(createGreenMaterial());
 
         // stl files
-        for(int i = 0; i < ViWiTraMain.stlFileObjects.size(); ++i) {
+        for (int i = 0; i < ViWiTraMain.stlFileObjects.size(); ++i) {
             STLFileObject stlFileObject = ViWiTraMain.stlFileObjects.get(i);
             float[] vertices = stlFileObject.getVertices();
 
