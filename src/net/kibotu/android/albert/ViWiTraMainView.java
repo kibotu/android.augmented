@@ -26,7 +26,7 @@ public class ViWiTraMainView implements ApplicationListener {
     public static final String TAG = ViWiTraMainView.class.getSimpleName();
     Perspective3DCamera perspective3DCamera = null;
     ShaderProgram shader = null;
-    Mesh mesh = null;
+    Mesh[] meshes = null;
     Mesh mesh1 = null;
 
     private static ShaderProgram createShader() {
@@ -88,17 +88,19 @@ public class ViWiTraMainView implements ApplicationListener {
         perspective3DCamera.near = 0.5f;
         perspective3DCamera.far = 300;
 
-        STLFileObject stlFileObject = ViWiTraMain.stlFileObjects.get(0);
-        float[] vertices = stlFileObject.getVertices();
+        meshes = new Mesh[ViWiTraMain.stlFileObjects.size()];
 
-        // TODO interleaved vertexArray erstellen (im Parser)
+        for(int i = 0; i < ViWiTraMain.stlFileObjects.size(); ++i) {
+            STLFileObject stlFileObject = ViWiTraMain.stlFileObjects.get(i);
+            float[] vertices = stlFileObject.getVertices();
 
-        ArrayList<VertexAttribute> attributes = new ArrayList<VertexAttribute>();
-        attributes.add(new VertexAttribute(VertexAttributes.Usage.Position, 3, ShaderProgram.POSITION_ATTRIBUTE));
-        attributes.add(new VertexAttribute(VertexAttributes.Usage.Normal, 3, ShaderProgram.NORMAL_ATTRIBUTE));
+            ArrayList<VertexAttribute> attributes = new ArrayList<VertexAttribute>();
+            attributes.add(new VertexAttribute(VertexAttributes.Usage.Position, 3, ShaderProgram.POSITION_ATTRIBUTE));
+            attributes.add(new VertexAttribute(VertexAttributes.Usage.Normal, 3, ShaderProgram.NORMAL_ATTRIBUTE));
 
-        mesh = new Mesh(true, vertices.length / 2 / 3, 0, attributes.toArray(new VertexAttribute[attributes.size()]));
-        mesh.setVertices(vertices);
+            meshes[i] = new Mesh(true, vertices.length / 2 / 3, 0, attributes.toArray(new VertexAttribute[attributes.size()]));
+            meshes[i].setVertices(vertices);
+        }
 
         mesh1 = createMesh();
 
@@ -109,6 +111,7 @@ public class ViWiTraMainView implements ApplicationListener {
     private void initGL() {
         Gdx.graphics.getGL20().glEnable(GL20.GL_BLEND);
 
+        shader.begin();
 //        gl.glDisable(GL10.GL_DITHER);
 //        gl.glEnable(GL10.GL_DEPTH_TEST);
 //        gl.glEnable(GL10.GL_CULL_FACE);
@@ -131,11 +134,11 @@ public class ViWiTraMainView implements ApplicationListener {
         perspective3DCamera.update();
         perspective3DCamera.applyShader(Gdx.graphics.getGL20());
 
-        if (mesh != null) {
-            shader.begin();
-            mesh.render(shader, GL20.GL_TRIANGLES);
+        if (meshes != null) {
+            for (Mesh mesh : meshes) {
+                mesh.render(shader, GL20.GL_TRIANGLES);
+            }
             mesh1.render(shader, GL20.GL_TRIANGLES);
-            shader.end();
         }
 
     }
@@ -154,5 +157,6 @@ public class ViWiTraMainView implements ApplicationListener {
     public void dispose() {
         Log.d(TAG, TAG + ": dispose");
     }
+
 
 }
