@@ -41,7 +41,7 @@ public class ViWiTraMain extends AndroidApplication {
         cfg.useWakelock = true;
         cfg.useGL20 = true;
 
-        initialize(new ViWiTraMainView(), cfg);
+        initialize(new ViWiTraMainView(this), cfg);
 
         final Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.productlistdialogview);
