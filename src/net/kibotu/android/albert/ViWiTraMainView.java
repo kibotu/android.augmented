@@ -28,11 +28,11 @@ import java.util.List;
 public class ViWiTraMainView implements ApplicationListener, View.OnTouchListener, View.OnKeyListener {
 
     public static final String TAG = ViWiTraMainView.class.getSimpleName();
+    Mesh[] meshes;
     private ShaderProgram shader;
     private Perspective3DCamera perspective3DCamera;
     private Light light;
     private List<STLMaterial> materials;
-    private Mesh mesh;
     private Mesh mesh1;
     private Context context;
 
@@ -43,7 +43,7 @@ public class ViWiTraMainView implements ApplicationListener, View.OnTouchListene
         this.perspective3DCamera = null;
         this.light = null;
         this.materials = new ArrayList<STLMaterial>();
-        this.mesh = null;
+        this.meshes = null;
         this.mesh1 = null;
         this.context = context;
 
@@ -157,21 +157,24 @@ public class ViWiTraMainView implements ApplicationListener, View.OnTouchListene
         // light source
         light = new Light(Light.LIGHT_DIRECTIONAL_UNIFORM, 0, 0, 30, 0, 0, -1);
 
+        meshes = new Mesh[ViWiTraMain.stlFileObjects.size()];
+
         // materials
         materials.add(createRedMaterial());
         materials.add(createGreenMaterial());
 
         // stl files
-        STLFileObject stlFileObject = ViWiTraMain.stlFileObjects.get(0);
-        float[] vertices = stlFileObject.getVertices();
+        for (int i = 0; i < ViWiTraMain.stlFileObjects.size(); ++i) {
+            STLFileObject stlFileObject = ViWiTraMain.stlFileObjects.get(i);
+            float[] vertices = stlFileObject.getVertices();
 
-        ArrayList<VertexAttribute> attributes = new ArrayList<VertexAttribute>();
-        attributes.add(new VertexAttribute(VertexAttributes.Usage.Position, 3, ShaderProgram.POSITION_ATTRIBUTE));
-        attributes.add(new VertexAttribute(VertexAttributes.Usage.Normal, 3, ShaderProgram.NORMAL_ATTRIBUTE));
+            ArrayList<VertexAttribute> attributes = new ArrayList<VertexAttribute>();
+            attributes.add(new VertexAttribute(VertexAttributes.Usage.Position, 3, ShaderProgram.POSITION_ATTRIBUTE));
+            attributes.add(new VertexAttribute(VertexAttributes.Usage.Normal, 3, ShaderProgram.NORMAL_ATTRIBUTE));
 
-        // mesh TODO mesh list/scenegraph
-        mesh = new Mesh(true, vertices.length / 2 / 3, 0, attributes.toArray(new VertexAttribute[attributes.size()]));
-        mesh.setVertices(vertices);
+            meshes[i] = new Mesh(true, vertices.length / 2 / 3, 0, attributes.toArray(new VertexAttribute[attributes.size()]));
+            meshes[i].setVertices(vertices);
+        }
 
         // random obj file
         mesh1 = createMesh();
@@ -182,7 +185,9 @@ public class ViWiTraMainView implements ApplicationListener, View.OnTouchListene
 
     private void initGL() {
         Gdx.graphics.getGL20().glEnable(GL20.GL_BLEND);
-        Gdx.graphics.getGL20().glEnable(GL20.GL_DITHER);
+
+        shader.begin();
+//        gl.glDisable(GL10.GL_DITHER);
         Gdx.graphics.getGL20().glEnable(GL20.GL_DEPTH_TEST);
         Gdx.graphics.getGL20().glEnable(GL20.GL_CULL_FACE);
     }
@@ -210,14 +215,13 @@ public class ViWiTraMainView implements ApplicationListener, View.OnTouchListene
         light.apply(shader);
 
         // material
-        materials.get(1).apply(shader);
+        materials.get(0).apply(shader);
 
-        // draw mesh
-        if (mesh != null) {
-            shader.begin();
-            mesh.render(shader, GL20.GL_TRIANGLES);
+        if (meshes != null) {
+            for (Mesh mesh : meshes) {
+                mesh.render(shader, GL20.GL_TRIANGLES);
+            }
             mesh1.render(shader, GL20.GL_TRIANGLES);
-            shader.end();
         }
     }
 
