@@ -3,16 +3,15 @@ package net.kibotu.android.albert;
 import android.util.Log;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Mesh;
-import com.badlogic.gdx.graphics.VertexAttribute;
-import com.badlogic.gdx.graphics.VertexAttributes;
+import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g3d.loaders.obj.ObjLoader;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import net.kibotu.android.albert.stl.STLFileObject;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -24,11 +23,41 @@ import java.util.ArrayList;
 public class ViWiTraMainView implements ApplicationListener {
 
     public static final String TAG = ViWiTraMainView.class.getSimpleName();
-    Perspective3DCamera perspective3DCamera = null;
-    ShaderProgram shader = null;
-    Mesh mesh = null;
-    Mesh mesh1 = null;
+    private ShaderProgram shader;
+    private Perspective3DCamera perspective3DCamera;
+    private Light light;
+    private List<STLMaterial> materials;
+    private Mesh mesh = null;
+    private Mesh mesh1 = null;
 
+    public ViWiTraMainView() {
+        // TODO better initialization
+        this.shader = null;
+        this.perspective3DCamera = null;
+        this.light = null;
+        this.materials = new ArrayList<STLMaterial>();
+        this.mesh = null;
+        this.mesh1 = null;
+    }
+
+    private static ShaderProgram loadAndCreateShader(@NotNull String vertex, @NotNull String fragment) {
+        ShaderProgram meshShader = new ShaderProgram(loadFile(vertex), loadFile(fragment));
+        if (meshShader.isCompiled() == false)
+            throw new IllegalStateException(meshShader.getLog());
+        return meshShader;
+    }
+
+    private static String loadFile(@NotNull String filepath) {
+        String file = null;
+        try {
+            file = Gdx.files.internal(filepath).readString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return file;
+    }
+
+    @Deprecated // use createAndLoadShader instead
     private static ShaderProgram createShader() {
         // this shader tells opengl where to put things
 
@@ -36,19 +65,19 @@ public class ViWiTraMainView implements ApplicationListener {
         String normal = ShaderProgram.NORMAL_ATTRIBUTE;
 
         String vertexShader =
-                "precision mediump float;      \n"
+                "precision mediump float;\n"
                         + "attribute vec3 " + position + ";    \n"
                         + "attribute vec3 " + normal + ";    \n"
                         + "uniform mat4 u_ProjectionView;   \n"
                         + "void main()                   \n"
                         + "{                             \n"
-                        + "   gl_Position = u_ProjectionView * vec4( "+ position +", 1.0);  \n"
+                        + "   gl_Position = u_ProjectionView * vec4( " + position + ", 1.0);  \n"
                         + "}                             \n";
 
         // this one tells it what goes in between the points (i.e
         // colour/texture)
         String fragmentShader =
-                          "precision mediump float;    \n"
+                "precision mediump float;    \n"
                         + "void main()                 \n"
                         + "{                           \n"
                         + "  gl_FragColor = vec4(1.0,0.0,0.0,1.0);	\n"
@@ -64,12 +93,30 @@ public class ViWiTraMainView implements ApplicationListener {
         return meshShader;
     }
 
+    public static STLMaterial createRedMaterial() {
+        STLMaterial material = new STLMaterial("red");
+        material.Ambient = new Color(0, 0, 0, 255);
+        material.Diffuse = new Color(255, 0, 0, 255);
+        material.Specular = new Color(128, 128, 128, 255);
+        material.Emissive = new Color(0, 0, 0, 255);
+        return material;
+    }
+
+    public static STLMaterial createGreenMaterial() {
+        STLMaterial material = new STLMaterial("green");
+        material.Ambient = new Color(0, 0, 0, 255);
+        material.Diffuse = new Color(0, 255, 0, 255);
+        material.Specular = new Color(128, 128, 128, 255);
+        material.Emissive = new Color(0, 0, 0, 255);
+        return material;
+    }
+
     public static Mesh createMesh() {
 
         InputStream stream;
         Mesh mesh = null;
         try {
-            stream = Gdx.files.internal("data/heart.obj").read();
+            stream = Gdx.files.internal("data/models/heart.obj").read();
             mesh = ObjLoader.loadObj(stream, true);
         } catch (Exception e) {
             e.printStackTrace();
@@ -81,29 +128,39 @@ public class ViWiTraMainView implements ApplicationListener {
     public void create() {
         Log.d(TAG, TAG + ": create");
 
-        shader = createShader();
+        // shader
+//        shader = createShader();
+        shader = loadAndCreateShader("data/shader/default_vs.glsl", "data/shader/default_ps.glsl");
+
+        // camera
         perspective3DCamera = new Perspective3DCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), shader);
         perspective3DCamera.position.set(0, 0, 100);
         perspective3DCamera.direction.set(0, 0, -1);
-        perspective3DCamera.near = 0.5f;
-        perspective3DCamera.far = 300;
 
+        // light source
+        light = new Light(Light.LIGHT_DIRECTIONAL_UNIFORM, 0, 0, 100, 0, 0, -1);
+
+        // materials
+        materials.add(createRedMaterial());
+        materials.add(createGreenMaterial());
+
+        // stl files
         STLFileObject stlFileObject = ViWiTraMain.stlFileObjects.get(0);
         float[] vertices = stlFileObject.getVertices();
-
-        // TODO interleaved vertexArray erstellen (im Parser)
 
         ArrayList<VertexAttribute> attributes = new ArrayList<VertexAttribute>();
         attributes.add(new VertexAttribute(VertexAttributes.Usage.Position, 3, ShaderProgram.POSITION_ATTRIBUTE));
         attributes.add(new VertexAttribute(VertexAttributes.Usage.Normal, 3, ShaderProgram.NORMAL_ATTRIBUTE));
 
+        // mesh TODO mesh list/scenegraph
         mesh = new Mesh(true, vertices.length / 2 / 3, 0, attributes.toArray(new VertexAttribute[attributes.size()]));
         mesh.setVertices(vertices);
 
+        // random obj file
         mesh1 = createMesh();
 
+        // initial gl settings
         initGL();
-
     }
 
     private void initGL() {
@@ -123,21 +180,29 @@ public class ViWiTraMainView implements ApplicationListener {
     @Override
     public void render() {
 //        Log.d(TAG, TAG + ": render");
+
+        // clear screen
         Gdx.graphics.getGL20().glClearColor(0.3f, 0.3f, 0.3f, 1f);
+        // clear framebuffer
         Gdx.graphics.getGL20().glClear(GL20.GL_DEPTH_BUFFER_BIT | GL20.GL_COLOR_BUFFER_BIT | GL20.GL_STENCIL_BUFFER_BIT);
 
-        Gdx.graphics.getGL20().glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-
+        // camera
         perspective3DCamera.update();
         perspective3DCamera.applyShader(Gdx.graphics.getGL20());
 
+        // light
+//        light.apply(shader);
+
+        // material
+//        materials.get(0).apply(shader);
+
+        // draw mesh
         if (mesh != null) {
             shader.begin();
             mesh.render(shader, GL20.GL_TRIANGLES);
             mesh1.render(shader, GL20.GL_TRIANGLES);
             shader.end();
         }
-
     }
 
     @Override
