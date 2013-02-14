@@ -40,7 +40,7 @@ public class Light {
     }
 
     public Light(String name, float posX, float posY, float posZ, float dirX, float dirY, float dirZ) {
-        this(name, new Vector3(posX, posY, posZ), new Vector3(dirX, dirY, dirZ), LIGHT_DIRECTIONAL, true, new Color(0.1f,0.1f,0.1f,255), new Color(0.3f,0.3f,0.3f,255), new Color(0.3f,0.3f,0.3f,255));
+        this(name, new Vector3(posX, posY, posZ), new Vector3(dirX, dirY, dirZ), LIGHT_DIRECTIONAL, true, new Color(0.33f,0.33f,0.33f,255), new Color(0.33f,0.33f,0.33f,255), new Color(0.33f,0.33f,0.33f,255));
     }
 
     public void apply(@NotNull ShaderProgram program) {
@@ -61,8 +61,6 @@ public class Light {
         program.setUniformf(name + ".ambient", ambient.r, ambient.g, ambient.b, ambient.a);
         program.setUniformf(name + ".diffuse", diffuse.r, diffuse.g, diffuse.b, diffuse.a);
         program.setUniformf(name + ".specular", specular.r, specular.g, specular.b, specular.a);
-
-
 
         program.end();
     }
