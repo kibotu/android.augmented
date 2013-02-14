@@ -1,12 +1,17 @@
 package net.kibotu.android.albert;
 
+import android.content.Context;
 import android.util.Log;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
+import android.view.View;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g3d.loaders.obj.ObjLoader;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import net.kibotu.android.albert.stl.STLFileObject;
+import net.kibotu.android.albert.stl.STLMaterial;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.InputStream;
@@ -20,7 +25,7 @@ import java.util.List;
  * Time: 17:56
  * To change this template use File | Settings | File Templates.
  */
-public class ViWiTraMainView implements ApplicationListener {
+public class ViWiTraMainView implements ApplicationListener, View.OnTouchListener, View.OnKeyListener {
 
     public static final String TAG = ViWiTraMainView.class.getSimpleName();
     private ShaderProgram shader;
@@ -29,8 +34,9 @@ public class ViWiTraMainView implements ApplicationListener {
     private List<STLMaterial> materials;
     private Mesh mesh;
     private Mesh mesh1;
+    private Context context;
 
-    public ViWiTraMainView() {
+    public ViWiTraMainView(@NotNull Context context) {
         super();
         // TODO better initialization
         this.shader = null;
@@ -39,6 +45,10 @@ public class ViWiTraMainView implements ApplicationListener {
         this.materials = new ArrayList<STLMaterial>();
         this.mesh = null;
         this.mesh1 = null;
+        this.context = context;
+
+        // add input
+//        view.setOnTouchListener(InputEngineController.INSTANCE);
     }
 
     private static ShaderProgram loadAndCreateShader(@NotNull String vertex, @NotNull String fragment) {
@@ -100,15 +110,18 @@ public class ViWiTraMainView implements ApplicationListener {
         material.Diffuse = new Color(255, 0, 0, 255);
         material.Specular = new Color(128, 128, 128, 255);
         material.Emissive = new Color(0, 0, 0, 255);
+        material.shininess = 80;
         return material;
     }
 
     public static STLMaterial createGreenMaterial() {
+
         STLMaterial material = new STLMaterial("green");
         material.Ambient = new Color(0, 0, 0, 255);
         material.Diffuse = new Color(0, 255, 0, 255);
         material.Specular = new Color(128, 128, 128, 255);
         material.Emissive = new Color(0, 0, 0, 255);
+        material.shininess = 80;
         return material;
     }
 
@@ -131,17 +144,18 @@ public class ViWiTraMainView implements ApplicationListener {
 
         // shader
 //        shader = createShader();
-        shader = loadAndCreateShader("data/shader/default_vs.glsl", "data/shader/default_ps.glsl");
+//        shader = loadAndCreateShader("data/shader/default_vs.glsl", "data/shader/default_ps.glsl");
+        shader = loadAndCreateShader("data/shader/phong_vs.glsl", "data/shader/phong_ps.glsl");
 
         // camera
-        perspective3DCamera = new Perspective3DCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), shader);
-        perspective3DCamera.position.set(0, 0, 100);
+        perspective3DCamera = new Perspective3DCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        perspective3DCamera.position.set(0, 0, 30);
         perspective3DCamera.direction.set(0, 0, -1);
         perspective3DCamera.near = 0.5f;
         perspective3DCamera.far = 300;
 
         // light source
-        light = new Light(Light.LIGHT_DIRECTIONAL_UNIFORM, 0, 0, 100, 0, 0, -1);
+        light = new Light(Light.LIGHT_DIRECTIONAL_UNIFORM, 0, 0, 30, 0, 0, -1);
 
         // materials
         materials.add(createRedMaterial());
@@ -190,13 +204,13 @@ public class ViWiTraMainView implements ApplicationListener {
 
         // camera
         perspective3DCamera.update();
-        perspective3DCamera.applyShader(Gdx.graphics.getGL20());
+        perspective3DCamera.apply(shader);
 
         // light
-//        light.apply(shader);
+        light.apply(shader);
 
         // material
-//        materials.get(0).apply(shader);
+        materials.get(0).apply(shader);
 
         // draw mesh
         if (mesh != null) {
@@ -222,4 +236,16 @@ public class ViWiTraMainView implements ApplicationListener {
         Log.d(TAG, TAG + ": dispose");
     }
 
+    @Override
+    public boolean onKey(View view, int i, KeyEvent keyEvent) {
+        return false;
+    }
+
+    @Override
+    public boolean onTouch(View view, MotionEvent event) {
+        float px = event.getX() / Gdx.graphics.getWidth();
+        float py = event.getY() / Gdx.graphics.getHeight();
+
+        return false;
+    }
 }

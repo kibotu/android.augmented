@@ -1,4 +1,4 @@
-package net.kibotu.android.albert;
+package net.kibotu.android.albert.stl;
 
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
