@@ -20,11 +20,9 @@ public class Perspective3DCamera extends PerspectiveCamera {
         this.shaderProgram = shaderProgram;
     }
 
-    public void applyShader (GL20 gl) {
+    public void applyShader(GL20 gl) {
         shaderProgram.begin();
-        //combined.set(projection).mul(view);
         shaderProgram.setUniformMatrix("u_ProjectionView", combined);
         shaderProgram.end();
     }
-
 }
