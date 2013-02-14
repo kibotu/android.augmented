@@ -9,13 +9,11 @@ import android.widget.Toast;
 import net.kibotu.android.albert.stl.STLFileLoader;
 import net.kibotu.android.albert.stl.STLFileObject;
 
-import java.util.LinkedList;
 import java.util.List;
 
 public class MainActivity extends Activity {
 
     public static final String TAG = MainActivity.class.getSimpleName();
-
     static final int PICK_DIRECTORY_REQUEST = 0;
 
     /**
@@ -133,12 +131,10 @@ public class MainActivity extends Activity {
                 startActivity(intent);
 
                 ViWiTraMain.stlFileObjects = stlFileObjects;
-            }
-            else {
+            } else {
                 Log.d(TAG, this.getClass().getSimpleName() + ": onActivityResult - wrong resultCode");
             }
-        }
-        else {
+        } else {
             Log.d(TAG, this.getClass().getSimpleName() + ": onActivityResult - wrong requestCode");
         }
     }
