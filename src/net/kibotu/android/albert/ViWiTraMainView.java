@@ -27,10 +27,11 @@ public class ViWiTraMainView implements ApplicationListener {
     private Perspective3DCamera perspective3DCamera;
     private Light light;
     private List<STLMaterial> materials;
-    private Mesh mesh = null;
-    private Mesh mesh1 = null;
+    private Mesh mesh;
+    private Mesh mesh1;
 
     public ViWiTraMainView() {
+        super();
         // TODO better initialization
         this.shader = null;
         this.perspective3DCamera = null;
@@ -65,7 +66,7 @@ public class ViWiTraMainView implements ApplicationListener {
         String normal = ShaderProgram.NORMAL_ATTRIBUTE;
 
         String vertexShader =
-                "precision mediump float;\n"
+                "precision mediump float;      \n"
                         + "attribute vec3 " + position + ";    \n"
                         + "attribute vec3 " + normal + ";    \n"
                         + "uniform mat4 u_ProjectionView;   \n"
@@ -136,6 +137,8 @@ public class ViWiTraMainView implements ApplicationListener {
         perspective3DCamera = new Perspective3DCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), shader);
         perspective3DCamera.position.set(0, 0, 100);
         perspective3DCamera.direction.set(0, 0, -1);
+        perspective3DCamera.near = 0.5f;
+        perspective3DCamera.far = 300;
 
         // light source
         light = new Light(Light.LIGHT_DIRECTIONAL_UNIFORM, 0, 0, 100, 0, 0, -1);
@@ -165,7 +168,6 @@ public class ViWiTraMainView implements ApplicationListener {
 
     private void initGL() {
         Gdx.graphics.getGL20().glEnable(GL20.GL_BLEND);
-
 //        gl.glDisable(GL10.GL_DITHER);
 //        gl.glEnable(GL10.GL_DEPTH_TEST);
 //        gl.glEnable(GL10.GL_CULL_FACE);
