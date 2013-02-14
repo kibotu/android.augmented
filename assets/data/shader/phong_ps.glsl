@@ -70,7 +70,7 @@ vec3 phong(vec3 pos, vec3 n, vec3 v,  DirectionalLight light, PhongMaterial mate
 void main() {
 
     // normalize normal after projection
-    vec3 normalEC = ecNormal;
+    vec3 normalEC = normalize(ecNormal);
 
     // do we use a perspective or an orthogonal projection matrix?
     bool usePerspective = u_ProjectionMatrix[2][3] != 0.0;

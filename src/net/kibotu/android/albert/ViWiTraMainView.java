@@ -110,7 +110,7 @@ public class ViWiTraMainView implements ApplicationListener, View.OnTouchListene
         material.Diffuse = new Color(255, 0, 0, 255);
         material.Specular = new Color(128, 128, 128, 255);
         material.Emissive = new Color(0, 0, 0, 255);
-        material.shininess = 80;
+        material.shininess = 32;
         return material;
     }
 
@@ -121,7 +121,7 @@ public class ViWiTraMainView implements ApplicationListener, View.OnTouchListene
         material.Diffuse = new Color(0, 255, 0, 255);
         material.Specular = new Color(128, 128, 128, 255);
         material.Emissive = new Color(0, 0, 0, 255);
-        material.shininess = 80;
+        material.shininess = 32;
         return material;
     }
 
@@ -151,8 +151,8 @@ public class ViWiTraMainView implements ApplicationListener, View.OnTouchListene
         perspective3DCamera = new Perspective3DCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         perspective3DCamera.position.set(0, 0, 30);
         perspective3DCamera.direction.set(0, 0, -1);
-        perspective3DCamera.near = 0.5f;
-        perspective3DCamera.far = 300;
+        perspective3DCamera.near = 0.001f;
+        perspective3DCamera.far = 1000f;
 
         // light source
         light = new Light(Light.LIGHT_DIRECTIONAL_UNIFORM, 0, 0, 30, 0, 0, -1);
@@ -182,9 +182,9 @@ public class ViWiTraMainView implements ApplicationListener, View.OnTouchListene
 
     private void initGL() {
         Gdx.graphics.getGL20().glEnable(GL20.GL_BLEND);
-//        gl.glDisable(GL10.GL_DITHER);
-//        gl.glEnable(GL10.GL_DEPTH_TEST);
-//        gl.glEnable(GL10.GL_CULL_FACE);
+        Gdx.graphics.getGL20().glEnable(GL20.GL_DITHER);
+        Gdx.graphics.getGL20().glEnable(GL20.GL_DEPTH_TEST);
+        Gdx.graphics.getGL20().glEnable(GL20.GL_CULL_FACE);
     }
 
     @Override
@@ -210,7 +210,7 @@ public class ViWiTraMainView implements ApplicationListener, View.OnTouchListene
         light.apply(shader);
 
         // material
-        materials.get(0).apply(shader);
+        materials.get(1).apply(shader);
 
         // draw mesh
         if (mesh != null) {
