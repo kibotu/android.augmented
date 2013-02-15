@@ -170,6 +170,8 @@ public class ViWiTraMainViewRenderer implements ApplicationListener, InputProces
         camera.apply(shader);
 
         // light
+        light.position.set(camera.position);
+        light.direction.set(camera.direction);
         light.apply(shader);
 
         // material
@@ -236,8 +238,8 @@ public class ViWiTraMainViewRenderer implements ApplicationListener, InputProces
 
     @Override
     public boolean touchDragged(int x, int y, int pointer) {
-        Log.d(TAG,  "x=" +Gdx.input.getDeltaX());
         camera.rotate((float) (Gdx.input.getDeltaX()*Math.PI/180f), 0,1,0);
+        camera.rotate((float) (Gdx.input.getDeltaY()*Math.PI/180f), 1,0,0);
         return true;
     }
 
