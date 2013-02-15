@@ -1,8 +1,10 @@
 package net.kibotu.android.albert;
 
 import android.app.Dialog;
+import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.SurfaceView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import com.badlogic.gdx.backends.android.AndroidApplication;
@@ -39,8 +41,19 @@ public class ViWiTraMain extends AndroidApplication {
         cfg.useCompass = false;
         cfg.useWakelock = true;
         cfg.useGL20 = true;
-
+        cfg.r = 8;
+        cfg.g = 8;
+        cfg.b = 8;
+        cfg.a = 8;
+        cfg.depth = 16;
         initialize(new ViWiTraMainViewRenderer(this), cfg);
+
+        if (graphics.getView() instanceof SurfaceView) {
+            SurfaceView glView = (SurfaceView) graphics.getView();
+            // force alpha channel - I'm not sure we need this as the GL surface is already using alpha channel
+            glView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
+            glView.getHolder().setFormat(PixelFormat.RGBA_8888);
+        }
 
         final Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.productlistdialogview);
