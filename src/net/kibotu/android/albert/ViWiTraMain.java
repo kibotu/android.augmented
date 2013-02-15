@@ -2,7 +2,6 @@ package net.kibotu.android.albert;
 
 import android.app.Dialog;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -41,7 +40,7 @@ public class ViWiTraMain extends AndroidApplication {
         cfg.useWakelock = true;
         cfg.useGL20 = true;
 
-        initialize(new ViWiTraMainView(this), cfg);
+        initialize(new ViWiTraMainViewRenderer(this), cfg);
 
         final Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.productlistdialogview);
