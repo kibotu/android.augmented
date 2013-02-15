@@ -225,7 +225,7 @@ public class ViWiTraMainViewRenderer implements ApplicationListener, InputProces
 
     @Override
     public boolean touchDown(int x, int y, int pointer, int button) {
-        perspective3DCamera.rotate(Gdx.input.getDeltaX(), 0, 1, 0);
+        camera.rotate(Gdx.input.getDeltaX(), 0, 1, 0);
 //        setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
         return false;
     }
