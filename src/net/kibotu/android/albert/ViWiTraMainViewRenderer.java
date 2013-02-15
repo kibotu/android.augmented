@@ -141,6 +141,9 @@ public class ViWiTraMainViewRenderer implements ApplicationListener, InputProces
 
         // initial gl settings
         initGL();
+
+        // register listener
+        Gdx.input.setInputProcessor(this);
     }
 
     private void initGL() {
@@ -233,7 +236,9 @@ public class ViWiTraMainViewRenderer implements ApplicationListener, InputProces
 
     @Override
     public boolean touchDragged(int x, int y, int pointer) {
-        return false;
+        Log.d(TAG,  "x=" +Gdx.input.getDeltaX());
+        camera.rotate((float) (Gdx.input.getDeltaX()*Math.PI/180f), 0,1,0);
+        return true;
     }
 
     @Override
