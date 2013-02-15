@@ -1,19 +1,22 @@
 precision mediump float;
+
+uniform mat4 u_ProjectionView;
+uniform mat4 u_WorldView;
+uniform mat4 u_ModelView;
+
 attribute vec3 a_position;
 attribute vec3 a_normal;
 
-uniform mat4 u_ProjectionView;
-
-varying vec4 ecPosition;
-varying vec3 ecNormal;
+varying vec3 v_ViewSpacePosition;
+varying vec3 v_Normal;
 
 void main() {
 
-    // transform vertex position and normal into eye coordinates
-    // for lighting calculations
-    ecPosition   = vec4(a_position,1.0);
-    ecNormal     = normalize(a_normal);
+    // The normal graphic's pipeline transform.
+    gl_Position = u_ProjectionView * u_WorldView * u_ModelView * vec4(a_position, 1.0);
 
-    // set the fragment position in clip coordinates
-    gl_Position  = u_ProjectionView * ecPosition;
+    v_ViewSpacePosition = (u_WorldView * vec4(a_position, 1.0)).xyz;
+
+    // Only take to view space
+    v_Normal = (normalize(u_WorldView * vec4(a_normal, 0.0))).xyz;
 }

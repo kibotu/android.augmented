@@ -1,9 +1,14 @@
 package net.kibotu.android.albert;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL10;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Matrix3;
 import com.badlogic.gdx.math.Matrix4;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -11,28 +16,32 @@ import org.jetbrains.annotations.Nullable;
  * User: Apu
  * Date: 13.02.13
  * Time: 14:58
- * To change this template use File | Settings | File Templates.
  */
 public class Perspective3DCamera extends PerspectiveCamera {
 
-    protected Matrix3 normalMatrix;
+    private Color background;
 
     public Perspective3DCamera(float fieldOfView, float viewportWidth, float viewportHeight) {
         super(fieldOfView, viewportWidth, viewportHeight);
-        normalMatrix = new Matrix3();
+        background = Color.BLACK;
     }
 
-    public void apply(ShaderProgram program) {
-        program.begin();
-        program.setUniformMatrix("u_ProjectionView", combined);
-//        program.setUniformMatrix("u_NormalMatrix", normalMatrix);
-        program.end();
+    public void apply(@NotNull ShaderProgram program) {
+        program.setUniformMatrix("u_ProjectionWorldView", combined);
+        program.setUniformMatrix("u_ProjectionView", projection);
+        program.setUniformMatrix("u_WorldView", view);
     }
 
-    public void update(@Nullable Matrix4 modelViewMatrix) {
-        super.update();
-//        if(modelViewMatrix == null) normalMatrix.mul(modelViewMatrix);
-//        normalMatrix.mul(modelViewMatrix);
+    public void clearScreen(@NotNull GL20 gl20) {
+        gl20.glClearColor(background.r, background.g, background.b, background.a);
+        gl20.glClear(GL20.GL_DEPTH_BUFFER_BIT | GL20.GL_COLOR_BUFFER_BIT | GL20.GL_STENCIL_BUFFER_BIT);
+    }
 
+    public Color getBackground() {
+        return background;
+    }
+
+    public void setBackground(@NotNull Color background) {
+        this.background = background;
     }
 }
