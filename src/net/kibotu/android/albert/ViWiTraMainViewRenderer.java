@@ -1,17 +1,14 @@
 package net.kibotu.android.albert;
 
-import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
-import android.view.KeyEvent;
-import android.view.MotionEvent;
-import android.view.View;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g3d.loaders.obj.ObjLoader;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.math.Matrix4;
 import net.kibotu.android.albert.stl.STLFileObject;
 import net.kibotu.android.albert.stl.STLMaterial;
 import org.jetbrains.annotations.NotNull;
@@ -21,36 +18,33 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created with IntelliJ IDEA.
  * User: Apu
  * Date: 07.02.13
  * Time: 17:56
- * To change this template use File | Settings | File Templates.
  */
-public class ViWiTraMainView implements ApplicationListener, InputProcessor {
+public class ViWiTraMainViewRenderer implements ApplicationListener, InputProcessor {
 
-    public static final String TAG = ViWiTraMainView.class.getSimpleName();
-    Mesh[] meshes;
+    public static final String TAG = ViWiTraMainViewRenderer.class.getSimpleName();
+    private Mesh[] meshes;
     private ShaderProgram shader;
-    private Perspective3DCamera perspective3DCamera;
+    private Perspective3DCamera camera;
     private Light light;
     private List<STLMaterial> materials;
-    private Mesh mesh1;
+    private Mesh heart;
     private Context context;
+    private Matrix4 u_ModelMatrix;
 
-    public ViWiTraMainView(@NotNull Context context) {
+    public ViWiTraMainViewRenderer(@NotNull Context context) {
         super();
         // TODO better initialization
         this.shader = null;
-        this.perspective3DCamera = null;
+        this.camera = null;
         this.light = null;
         this.materials = new ArrayList<STLMaterial>();
         this.meshes = null;
-        this.mesh1 = null;
+        this.heart = null;
         this.context = context;
-
-        // add input
-//        view.setOnTouchListener(InputEngineController.INSTANCE);
+        this.u_ModelMatrix = new Matrix4();
     }
 
     private static ShaderProgram loadAndCreateShader(@NotNull String vertex, @NotNull String fragment) {
@@ -70,42 +64,6 @@ public class ViWiTraMainView implements ApplicationListener, InputProcessor {
         return file;
     }
 
-    @Deprecated // use createAndLoadShader instead
-    private static ShaderProgram createShader() {
-        // this shader tells opengl where to put things
-
-        String position = ShaderProgram.POSITION_ATTRIBUTE;
-        String normal = ShaderProgram.NORMAL_ATTRIBUTE;
-
-        String vertexShader =
-                "precision mediump float;      \n"
-                        + "attribute vec3 " + position + ";    \n"
-                        + "attribute vec3 " + normal + ";    \n"
-                        + "uniform mat4 u_ProjectionView;   \n"
-                        + "void main()                   \n"
-                        + "{                             \n"
-                        + "   gl_Position = u_ProjectionView * vec4( " + position + ", 1.0);  \n"
-                        + "}                             \n";
-
-        // this one tells it what goes in between the points (i.e
-        // colour/texture)
-        String fragmentShader =
-                "precision mediump float;    \n"
-                        + "void main()                 \n"
-                        + "{                           \n"
-                        + "  gl_FragColor = vec4(1.0,0.0,0.0,1.0);	\n"
-                        + "}";
-
-        // make an actual shader from our strings
-        ShaderProgram meshShader = new ShaderProgram(vertexShader, fragmentShader);
-
-        // check there's no shader compile errors
-        if (meshShader.isCompiled() == false)
-            throw new IllegalStateException(meshShader.getLog());
-
-        return meshShader;
-    }
-
     public static STLMaterial createRedMaterial() {
         STLMaterial material = new STLMaterial("red");
         material.Ambient = new Color(0, 0, 0, 255);
@@ -117,7 +75,6 @@ public class ViWiTraMainView implements ApplicationListener, InputProcessor {
     }
 
     public static STLMaterial createGreenMaterial() {
-
         STLMaterial material = new STLMaterial("green");
         material.Ambient = new Color(0, 0, 0, 255);
         material.Diffuse = new Color(0, 255, 0, 255);
@@ -145,23 +102,21 @@ public class ViWiTraMainView implements ApplicationListener, InputProcessor {
         Log.d(TAG, TAG + ": create");
 
         // shader
-//        shader = createShader();
 //        shader = loadAndCreateShader("data/shader/default_vs.glsl", "data/shader/default_ps.glsl");
         shader = loadAndCreateShader("data/shader/phong_vs.glsl", "data/shader/phong_ps.glsl");
 
         // camera
-        perspective3DCamera = new Perspective3DCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        perspective3DCamera.position.set(0, 0, 0);
-//        perspective3DCamera.direction.set(0, 0, -1);
-        perspective3DCamera.lookAt(0f, 0f, 0f);
-        perspective3DCamera.translate(0, 0, -10);
-        perspective3DCamera.lookAt(0f, 0f, 0f);
-        perspective3DCamera.near = 0.001f;
-        perspective3DCamera.far = 1000f;
+        camera = new Perspective3DCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        camera.position.set(0, 0, 30);
+        camera.direction.set(0, 0, -1);
+        camera.near = 0.001f;
+        camera.far = 1000f;
+        camera.setBackground(new Color(0.3f, 0.3f, 0.3f, 1f));
 
         // light source
         light = new Light(Light.LIGHT_DIRECTIONAL_UNIFORM, 0, 0, 30, 0, 0, -1);
 
+        // mesh group
         meshes = new Mesh[ViWiTraMain.stlFileObjects.size()];
 
         // materials
@@ -182,7 +137,7 @@ public class ViWiTraMainView implements ApplicationListener, InputProcessor {
         }
 
         // random obj file
-        mesh1 = createMesh();
+        heart = createMesh();
 
         // initial gl settings
         initGL();
@@ -192,11 +147,10 @@ public class ViWiTraMainView implements ApplicationListener, InputProcessor {
 
     private void initGL() {
         Gdx.graphics.getGL20().glEnable(GL20.GL_BLEND);
-
-        shader.begin();
         Gdx.graphics.getGL20().glEnable(GL20.GL_DITHER);
-        Gdx.graphics.getGL20().glEnable(GL20.GL_DEPTH_TEST);
+        Gdx.graphics.getGL20().glDisable(GL20.GL_DEPTH_TEST);
         Gdx.graphics.getGL20().glEnable(GL20.GL_CULL_FACE);
+        shader.begin();
     }
 
     @Override
@@ -207,46 +161,51 @@ public class ViWiTraMainView implements ApplicationListener, InputProcessor {
 
     @Override
     public void render() {
-//        Log.d(TAG, TAG + ": render");
-
         // clear screen
-        Gdx.graphics.getGL20().glClearColor(0.3f, 0.3f, 0.3f, 1f);
-        // clear framebuffer
-        Gdx.graphics.getGL20().glClear(GL20.GL_DEPTH_BUFFER_BIT | GL20.GL_COLOR_BUFFER_BIT | GL20.GL_STENCIL_BUFFER_BIT);
+        camera.clearScreen(Gdx.graphics.getGL20());
 
         // camera
-        perspective3DCamera.update();
-        perspective3DCamera.apply(shader);
+        camera.update();
+        camera.apply(shader);
 
         // light
-        light.position.set(perspective3DCamera.position);
-        light.direction.set(perspective3DCamera.direction);
         light.apply(shader);
 
         // material
         materials.get(0).apply(shader);
 
+        // model matrix TODO scene graph
+        shader.setUniformMatrix("u_ModelView", u_ModelMatrix);
+
         if (meshes != null) {
             for (Mesh mesh : meshes) {
                 mesh.render(shader, GL20.GL_TRIANGLES);
             }
-            mesh1.render(shader, GL20.GL_TRIANGLES);
+            heart.render(shader, GL20.GL_TRIANGLES);
         }
     }
 
     @Override
     public void pause() {
         Log.d(TAG, TAG + ": pause");
+        // TODO remove input listener somehow (otherwise possibly unpredicted behaviour of multiple inputs)
     }
 
     @Override
     public void resume() {
         Log.d(TAG, TAG + ": resume");
+        Gdx.input.setInputProcessor(this);
     }
 
     @Override
     public void dispose() {
         Log.d(TAG, TAG + ": dispose");
+        shader.end();
+        shader.dispose();
+        for (Mesh mesh : meshes) {
+            mesh.dispose();
+        }
+        heart.dispose();
     }
 
     @Override
@@ -273,24 +232,23 @@ public class ViWiTraMainView implements ApplicationListener, InputProcessor {
 
     @Override
     public boolean touchUp(int x, int y, int pointer, int button) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return false;
     }
 
     int xPosition;
     int yPosition;
     @Override
     public boolean touchDragged(int x, int y, int pointer) {
-
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return false;
     }
 
     @Override
     public boolean touchMoved(int x, int y) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return false;
     }
 
     @Override
     public boolean scrolled(int amount) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return false;
     }
 }
