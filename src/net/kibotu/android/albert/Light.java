@@ -44,7 +44,6 @@ public class Light {
     }
 
     public void apply(@NotNull ShaderProgram program) {
-        program.begin();
         program.setUniformf(name + ".position", position.x, position.y, position.z);
 
         switch (type) {
@@ -61,7 +60,5 @@ public class Light {
         program.setUniformf(name + ".ambient", ambient.r, ambient.g, ambient.b, ambient.a);
         program.setUniformf(name + ".diffuse", diffuse.r, diffuse.g, diffuse.b, diffuse.a);
         program.setUniformf(name + ".specular", specular.r, specular.g, specular.b, specular.a);
-
-        program.end();
     }
 }

@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import com.badlogic.gdx.backends.android.AndroidApplication;
@@ -23,6 +24,7 @@ public class ViWiTraMain extends AndroidApplication {
 
     public static final String TAG = MainActivity.class.getSimpleName();
     public static List<STLFileObject> stlFileObjects;
+    public ViWiTraMainView viWiTraMainView;
 
     /**
      * Called when the activity is first created.
@@ -41,7 +43,8 @@ public class ViWiTraMain extends AndroidApplication {
         cfg.useWakelock = true;
         cfg.useGL20 = true;
 
-        initialize(new ViWiTraMainView(this), cfg);
+        viWiTraMainView = new ViWiTraMainView(this);
+        initialize(viWiTraMainView, cfg);
 
         final Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.productlistdialogview);
@@ -131,6 +134,7 @@ public class ViWiTraMain extends AndroidApplication {
             Log.d(TAG, this.getClass().getSimpleName() + ": onDestroy (coused by destroying)");
         }
         super.onDestroy();
+
     }
 
 }

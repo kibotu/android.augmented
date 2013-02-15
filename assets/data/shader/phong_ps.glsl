@@ -78,7 +78,7 @@ void main() {
     // for perspective mode, the viewing direction (in eye coords) points
     // from the vertex to the origin (0,0,0) --> use -ecPosition as direction.
     // for orthogonal mode, the viewing direction is simply (0,0,1)
-    vec3 viewdirEC = usePerspective? normalize(-ecPosition.xyz) : vec3(0,0,1);
+    vec3 viewdirEC = usePerspective? normalize(u_DirectionalLight.position) : vec3(0,0,1);
 
     // calculate color using phong illumination
     vec3 color = phong( ecPosition.xyz, normalEC, viewdirEC, u_DirectionalLight, u_PhongMaterial );

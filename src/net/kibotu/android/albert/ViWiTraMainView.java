@@ -1,5 +1,6 @@
 package net.kibotu.android.albert;
 
+import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -7,6 +8,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g3d.loaders.obj.ObjLoader;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
@@ -25,7 +27,7 @@ import java.util.List;
  * Time: 17:56
  * To change this template use File | Settings | File Templates.
  */
-public class ViWiTraMainView implements ApplicationListener, View.OnTouchListener, View.OnKeyListener {
+public class ViWiTraMainView implements ApplicationListener, InputProcessor {
 
     public static final String TAG = ViWiTraMainView.class.getSimpleName();
     Mesh[] meshes;
@@ -149,8 +151,11 @@ public class ViWiTraMainView implements ApplicationListener, View.OnTouchListene
 
         // camera
         perspective3DCamera = new Perspective3DCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        perspective3DCamera.position.set(0, 0, 30);
-        perspective3DCamera.direction.set(0, 0, -1);
+        perspective3DCamera.position.set(0, 0, 0);
+//        perspective3DCamera.direction.set(0, 0, -1);
+        perspective3DCamera.lookAt(0f, 0f, 0f);
+        perspective3DCamera.translate(0, 0, -10);
+        perspective3DCamera.lookAt(0f, 0f, 0f);
         perspective3DCamera.near = 0.001f;
         perspective3DCamera.far = 1000f;
 
@@ -181,13 +186,15 @@ public class ViWiTraMainView implements ApplicationListener, View.OnTouchListene
 
         // initial gl settings
         initGL();
+
+        Gdx.input.setInputProcessor(this);
     }
 
     private void initGL() {
         Gdx.graphics.getGL20().glEnable(GL20.GL_BLEND);
 
         shader.begin();
-//        gl.glDisable(GL10.GL_DITHER);
+        Gdx.graphics.getGL20().glEnable(GL20.GL_DITHER);
         Gdx.graphics.getGL20().glEnable(GL20.GL_DEPTH_TEST);
         Gdx.graphics.getGL20().glEnable(GL20.GL_CULL_FACE);
     }
@@ -212,6 +219,8 @@ public class ViWiTraMainView implements ApplicationListener, View.OnTouchListene
         perspective3DCamera.apply(shader);
 
         // light
+        light.position.set(perspective3DCamera.position);
+        light.direction.set(perspective3DCamera.direction);
         light.apply(shader);
 
         // material
@@ -241,15 +250,47 @@ public class ViWiTraMainView implements ApplicationListener, View.OnTouchListene
     }
 
     @Override
-    public boolean onKey(View view, int i, KeyEvent keyEvent) {
+    public boolean keyDown(int keycode) {
         return false;
     }
 
     @Override
-    public boolean onTouch(View view, MotionEvent event) {
-        float px = event.getX() / Gdx.graphics.getWidth();
-        float py = event.getY() / Gdx.graphics.getHeight();
-
+    public boolean keyUp(int keycode) {
         return false;
+    }
+
+    @Override
+    public boolean keyTyped(char character) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDown(int x, int y, int pointer, int button) {
+        perspective3DCamera.rotate(Gdx.input.getDeltaX(), 0, 1, 0);
+//        setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+        return false;
+    }
+
+    @Override
+    public boolean touchUp(int x, int y, int pointer, int button) {
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    int xPosition;
+    int yPosition;
+    @Override
+    public boolean touchDragged(int x, int y, int pointer) {
+
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public boolean touchMoved(int x, int y) {
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public boolean scrolled(int amount) {
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 }

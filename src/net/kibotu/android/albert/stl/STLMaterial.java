@@ -25,12 +25,10 @@ public class STLMaterial extends Material {
     }
 
     public void apply(@NotNull ShaderProgram program) {
-        program.begin();
         program.setUniformf(PHONG_MATERIAL + ".ambient", Ambient.r, Ambient.g, Ambient.b, Ambient.a);
         program.setUniformf(PHONG_MATERIAL + ".diffuse", Diffuse.r, Diffuse.g, Diffuse.b, Diffuse.a);
         program.setUniformf(PHONG_MATERIAL + ".specular", Specular.r, Specular.g, Specular.b, Specular.a);
         program.setUniformf(PHONG_MATERIAL + ".emissive", Emissive.r, Emissive.g, Emissive.b, Emissive.a);
         program.setUniformf(PHONG_MATERIAL + ".shininess", shininess);
-        program.end();
     }
 }

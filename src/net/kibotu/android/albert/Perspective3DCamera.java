@@ -23,10 +23,8 @@ public class Perspective3DCamera extends PerspectiveCamera {
     }
 
     public void apply(ShaderProgram program) {
-        program.begin();
         program.setUniformMatrix("u_ProjectionView", combined);
 //        program.setUniformMatrix("u_NormalMatrix", normalMatrix);
-        program.end();
     }
 
     public void update(@Nullable Matrix4 modelViewMatrix) {
