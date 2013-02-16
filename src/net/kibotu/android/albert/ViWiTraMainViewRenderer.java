@@ -4,11 +4,14 @@ import android.content.Context;
 import android.util.Log;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g3d.loaders.obj.ObjLoader;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import net.kibotu.android.albert.stl.STLFileObject;
 import net.kibotu.android.albert.stl.STLMaterial;
 import org.jetbrains.annotations.NotNull;
@@ -25,6 +28,9 @@ import java.util.List;
 public class ViWiTraMainViewRenderer implements ApplicationListener, InputProcessor {
 
     public static final String TAG = ViWiTraMainViewRenderer.class.getSimpleName();
+    Vector2 vecP0;
+    Vector2 vecP1;
+    Vector2 vecP0toP1;
     private Mesh[] meshes;
     private ShaderProgram shader;
     private Perspective3DCamera camera;
@@ -33,6 +39,7 @@ public class ViWiTraMainViewRenderer implements ApplicationListener, InputProces
     private Mesh heart;
     private Context context;
     private Matrix4 u_ModelMatrix;
+    private int fingersDown = 0;
 
     public ViWiTraMainViewRenderer(@NotNull Context context) {
         super();
@@ -109,7 +116,7 @@ public class ViWiTraMainViewRenderer implements ApplicationListener, InputProces
         camera = new Perspective3DCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.position.set(0, 0, 30);
         camera.direction.set(0, 0, -1);
-        camera.near = 0.001f;
+        camera.near = 0.5f;
         camera.far = 1000f;
         camera.setBackground(new Color(0.3f, 0.3f, 0.3f, 1f));
 
@@ -148,9 +155,9 @@ public class ViWiTraMainViewRenderer implements ApplicationListener, InputProces
 
     private void initGL() {
         Gdx.graphics.getGL20().glEnable(GL20.GL_BLEND);
-        Gdx.graphics.getGL20().glEnable(GL20.GL_DITHER);
-        Gdx.graphics.getGL20().glDisable(GL20.GL_DEPTH_TEST);
-        Gdx.graphics.getGL20().glEnable(GL20.GL_CULL_FACE);
+//        Gdx.graphics.getGL20().glEnable(GL20.GL_DITHER);
+        Gdx.graphics.getGL20().glEnable(GL20.GL_DEPTH_TEST);
+//        Gdx.graphics.getGL20().glEnable(GL20.GL_CULL_FACE);
         shader.begin();
     }
 
@@ -202,7 +209,7 @@ public class ViWiTraMainViewRenderer implements ApplicationListener, InputProces
 
     @Override
     public void dispose() {
-        Log.d(TAG, TAG + ": dispose");
+        Log.d(TAG, "dispose");
         shader.end();
         shader.dispose();
         for (Mesh mesh : meshes) {
@@ -213,7 +220,10 @@ public class ViWiTraMainViewRenderer implements ApplicationListener, InputProces
 
     @Override
     public boolean keyDown(int keycode) {
-        return false;
+        if (keycode == Input.Keys.MENU) {
+            Log.d(TAG, "menu");
+        }
+        return true;
     }
 
     @Override
@@ -228,18 +238,75 @@ public class ViWiTraMainViewRenderer implements ApplicationListener, InputProces
 
     @Override
     public boolean touchDown(int x, int y, int pointer, int button) {
-        return false;
+        fingersDown++;
+        Log.d(TAG, "fingersDown after \"touchDown\": " + fingersDown);
+        if (fingersDown == 2 && (pointer == 0 || pointer == 1)) {
+            vecP0 = new Vector2(Gdx.input.getX(0), Gdx.input.getY(0));
+            vecP1 = new Vector2(Gdx.input.getX(1), Gdx.input.getY(1));
+            vecP0toP1 = new Vector2(vecP1).sub(vecP0);
+        }
+        return true;
     }
 
     @Override
     public boolean touchUp(int x, int y, int pointer, int button) {
+        fingersDown--;
+        Log.d(TAG, "fingersDown after \"touchUp\": " + fingersDown);
+        if (fingersDown == 1) {
+            vecP0 = null;
+            vecP1 = null;
+            vecP0toP1 = null;
+        }
         return false;
     }
 
     @Override
     public boolean touchDragged(int x, int y, int pointer) {
-        camera.rotate((float) (Gdx.input.getDeltaX()*Math.PI/180f), 0,1,0);
-        camera.rotate((float) (Gdx.input.getDeltaY()*Math.PI/180f), 1,0,0);
+
+        if (fingersDown >= 2 && pointer == 0) {
+
+            Vector2 newVecP0 = new Vector2(Gdx.input.getX(0), Gdx.input.getY(0));
+            Vector2 newVecP1 = new Vector2(Gdx.input.getX(1), Gdx.input.getY(1));
+
+            Vector2 vecP0ToNewVecP0 = new Vector2(vecP0).sub(newVecP0);
+            Vector2 vecP1ToNewVecP1 = new Vector2(vecP1).sub(newVecP1);
+
+            Vector2 newVecP0toP1 = new Vector2(newVecP1).sub(newVecP0);
+
+            if (vecP0ToNewVecP0.len() != 0 && vecP1ToNewVecP1.len() != 0) {
+                if (Math.abs(vecP0ToNewVecP0.angle() - vecP1ToNewVecP1.angle()) < 30) {
+
+                    Vector3 translationVector = new Vector3(-Math.min(Gdx.input.getDeltaX(0), Gdx.input.getDeltaX(1)) / 100f,
+                            Math.min(Gdx.input.getDeltaY(0), Gdx.input.getDeltaY(1)) / 100f,
+                            0f);
+                    translationVector.mul(new Matrix4(camera.view).inv());
+                    camera.position.set(translationVector.x, translationVector.y, translationVector.z);
+                }
+            }
+            if (Math.abs(Math.abs(vecP0ToNewVecP0.angle() - vecP1ToNewVecP1.angle()) - 180) < 20) {
+
+                float diff = vecP0toP1.len() - newVecP0toP1.len();
+                Vector3 zoomVector = new Vector3(camera.direction).mul(-diff / 50f);
+                camera.translate(zoomVector.x, zoomVector.y, zoomVector.z);
+            }
+            float angle = vecP0toP1.angle() - newVecP0toP1.angle();
+            if (Math.abs(angle) > 1.5) {
+
+                Vector3 rotationVector = new Vector3(camera.direction);
+                camera.rotate(angle, rotationVector.x, rotationVector.y, rotationVector.z);
+            }
+
+            vecP0 = newVecP0;
+            vecP1 = newVecP1;
+            vecP0toP1 = newVecP0toP1;
+
+        } else {
+            camera.rotate((float) (Gdx.input.getDeltaX() * Math.PI / 180f), camera.up.x, camera.up.y, camera.up.z);
+            Vector3 vecUp = new Vector3(camera.up);
+            vecUp.crs(camera.direction);
+            camera.rotate((float) (-Gdx.input.getDeltaY() * Math.PI / 180f), vecUp.x, vecUp.y, vecUp.z);
+        }
+
         return true;
     }
 
