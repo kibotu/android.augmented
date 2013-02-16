@@ -55,19 +55,18 @@ public class ViWiTraMain extends AndroidApplication {
             glView.getHolder().setFormat(PixelFormat.RGBA_8888);
         }
 
-        final Dialog dialog = new Dialog(this);
+
+        Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.productlistdialogview);
         dialog.setTitle("product list");
-
-        dialog.show();
 
         ListView listView = (ListView) dialog.findViewById(R.id.productpartslistview);
 
         ArrayAdapter<STLFileObject> adapter = new ArrayAdapter<STLFileObject>(this,
-                android.R.layout.simple_list_item_1, android.R.id.text1, stlFileObjects);
+                android.R.layout.simple_list_item_1, android.R.id.text1, ViWiTraMain.stlFileObjects);
 
         listView.setAdapter(adapter);
-
+//        dialog.show();
     }
 
     /**
